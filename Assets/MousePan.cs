@@ -10,6 +10,8 @@ public class MousePan : MonoBehaviour {
     private float leftPanBorder, rightPanBorder;
     private float topPanBorder, bottomPanBorder;
 
+    public float PanMaxX = 10, PanMinX = 0, PanMaxY = 20, PanMinY = -10, ZoomSpeed, ZoomMin, ZoomMax;
+
 	// Use this for initialization
 	void Start () {
         horizontalPanPixels = Screen.width * PanAreaPercent;
@@ -43,10 +45,34 @@ public class MousePan : MonoBehaviour {
             float ratio = (Input.mousePosition.y - bottomPanBorder) / verticalPanPixels;
             translation += Vector3.down * PanSpeed * ratio * Time.deltaTime;
         }
-        if (translation != Vector3.zero)
+
+        var zoomDelta = Input.GetAxis("Mouse ScrollWheel") * ZoomSpeed * Time.deltaTime;
+        if (zoomDelta != 0)
         {
-            camera.transform.position += translation;
-           
+            translation -= Vector3.forward * ZoomSpeed * zoomDelta;
         }
+
+        // Move camera with arrow keys
+        translation += new Vector3(Input.GetAxis("Horizontal"), -Input.GetAxis("Vertical"), 0);
+
+        // Keep camera within level and zoom area
+        var desiredPosition = camera.transform.position + translation;
+      
+        if (desiredPosition.x < PanMinX || desiredPosition.x > PanMaxX )
+        {
+            translation.x = 0;            
+        }
+        if (desiredPosition.y < PanMinY || desiredPosition.y > PanMaxY)
+        {
+            translation.y = 0;
+        }
+        if (desiredPosition.z < ZoomMin || desiredPosition.z > ZoomMax)
+        {
+            translation.z = 0;
+        }
+        
+            camera.transform.position += translation;
+
+        
 	}
 }
